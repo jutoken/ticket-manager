@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Project, Ticket, Comment, Status
+from .models import Project, Ticket, Comment, Status, Track
 
 # Register your models here.
 @admin.register(Project)
@@ -16,4 +16,8 @@ class CommentAdmin(admin.ModelAdmin):
 
 @admin.register(Status)
 class StatusAdmin(admin.ModelAdmin):
+    pass
+
+@admin.register(Track)
+class TrackAdmin(admin.ModelAdmin):
     pass
