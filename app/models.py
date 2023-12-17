@@ -6,21 +6,10 @@ from datetime import datetime
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 
-# Create your models here.
-class Status(models.Model):
-    name = models.CharField(max_length=30)
-
-    def __str__(self):
-        return self.name
-    
-    class Meta:
-        verbose_name_plural = "Status"
-
 class Project(models.Model):
     name = models.CharField(max_length=30)
-    status = models.ManyToManyField(Status)
-    contributors = models.ManyToManyField(User,limit_choices_to={'groups__name__in':['Developpers','Clients']})
-    date = models.DateTimeField(default=timezone.now,editable=False)
+    contributors = models.ManyToManyField('auth.User',related_name='projects')
+    date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
@@ -29,13 +18,14 @@ class Ticket(models.Model):
     projet = models.ForeignKey(Project,on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
     description = models.TextField(max_length=1000)
-    contributor = models.ForeignKey(User,on_delete=models.CASCADE,limit_choices_to={'groups__name__in':['Developpers','Clients']})
+    contributor = models.ForeignKey('auth.User',related_name='tickets',on_delete=models.CASCADE)
     estimation = models.DecimalField(default=0,max_digits=10,decimal_places=2)
     passed_time = models.DecimalField(default=0,max_digits=10,decimal_places=2)
     type = models.CharField(max_length=10,choices=[('master','master'),('normal','noraml')])
     date = models.DateTimeField(default=timezone.now)
-    status = models.ForeignKey(Status,on_delete=models.CASCADE)
-
+    status = models.CharField(max_length=200, choices=[('pending','pending'),('in progress','in progress'),('done','done'),('test prod','test prod'),('test preprod','test preprod')])
+    parent_task = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='child_tasks')
+        
     def __str__(self):
         return self.title
 
@@ -48,7 +38,7 @@ class Track(models.Model):
     ticket = models.ForeignKey(Ticket,on_delete=models.CASCADE)
     tasks = models.TextField(max_length=2000)
     time = models.DecimalField(default=0.01,max_digits=10,decimal_places=2)
-    user = models.ForeignKey(User,on_delete=models.CASCADE,limit_choices_to={'groups__name__in':['Developpers']})
+    user = models.ForeignKey('auth.User',related_name='tracks',on_delete=models.CASCADE)
     date = models.DateTimeField(default=timezone.now,validators=[no_future])
 
     def __str__(self):
@@ -56,7 +46,7 @@ class Track(models.Model):
 
 class Comment(models.Model):
     ticket = models.ForeignKey(Ticket,on_delete=models.CASCADE)
-    contributor = models.ForeignKey(User,on_delete=models.CASCADE,limit_choices_to={'groups__name__in':['Developpers','Clients']})
+    contributor = models.ForeignKey('auth.User',related_name='comments',on_delete=models.CASCADE)
     content = models.TextField(max_length=2000)
     date = models.DateTimeField(default=datetime.now())
 
