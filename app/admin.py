@@ -7,6 +7,10 @@ from .models import *
 class ProjectAdmin(admin.ModelAdmin):
     pass
 
+@admin.register(Status)
+class StautsAdmin(admin.ModelAdmin):
+    pass
+
 @admin.register(Ticket)
 class TicketAdmin(admin.ModelAdmin):
     list_display = ('pk','projet','contributor','status','title','passed_time','estimation')
